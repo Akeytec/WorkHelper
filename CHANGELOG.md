@@ -2,6 +2,16 @@
 
 This file records user-facing changes and data compatibility notes for each release.
 
+## [2.0.4] - 2026-04-27
+
+### Fixed
+
+- Pressing "Check for Updates" no longer shows both a checking dialog and a result dialog. The Home screen shows the checking state, and only the final result uses a popup.
+
+### Data Compatibility
+
+- No stored data format change.
+
 ## [2.0.3] - 2026-04-27
 
 ### Added

@@ -202,13 +202,6 @@ function setupAutoUpdater() {
       message: "更新を確認しています。",
       error: null,
     });
-    if (manualUpdateCheck) {
-      showUpdateMessage({
-        type: "info",
-        title: "WorkHelper 更新",
-        message: "更新を確認しています。",
-      });
-    }
   });
   autoUpdater.on("update-not-available", function (info) {
     setUpdateState({

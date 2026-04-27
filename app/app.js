@@ -2,7 +2,7 @@
   "use strict";
 
   /** Release version. Keep this aligned with package.json and CHANGELOG. */
-  var APP_VERSION = "2.0.3";
+  var APP_VERSION = "2.0.4";
 
   var TASK_KEY = "workhelper.tasks.v1";
   var MEMO_KEY = "workhelper.memo.v1";

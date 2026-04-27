@@ -3090,7 +3090,7 @@
     if (status) {
       if (!sup) {
         status.textContent =
-          "フォルダ保存: この開き方では利用できません。Chrome / Edge の最新版で、localhost または HTTPS で開いてください（file:// では無効なことがあります）。";
+          "フォルダ保存: インストール版の WorkHelper で利用できます。通常のアプリとして起動してください。";
       } else if (whActive()) {
         status.textContent =
           "フォルダ保存: 利用中です。データはこのフォルダ内の「" +

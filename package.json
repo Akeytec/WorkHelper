@@ -29,6 +29,7 @@
     "directories": {
       "output": "dist"
     },
+    "artifactName": "WorkHelper-Setup-${version}.${ext}",
     "files": [
       "app/**/*",
       "electron/**/*.cjs",
@@ -40,9 +41,9 @@
       ]
     },
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": false
     },
     "publish": {
       "provider": "github",

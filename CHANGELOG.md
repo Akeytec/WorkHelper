@@ -6,7 +6,7 @@
 
 ### Added
 
-- **Windows 用 Electron デスクトップアプリ**：インストーラー（NSIS）を [`electron-builder`](../package.json) で生成。`npm start` で開発、`npm run dist` で `dist/WorkHelper Setup x.x.x.exe` を出力。  
+- **Windows 用 Electron デスクトップアプリ**：インストーラー（NSIS）を [`electron-builder`](../package.json) で生成。`npm start` で開発、`npm run dist` で `dist/WorkHelper-Setup-x.x.x.exe` を出力。  
 - **GitHub Actions** [`.github/workflows/release.yml`](../.github/workflows/release.yml)：タグ `v*` プッシュで Windows 向けにビルドし、Releases へ `electron-updater` 用の成果物を公開。  
 - **自動更新**（`electron-updater`）：パッケージ化されたビルドで起動時に更新確認。メニュー「ヘルプ」→「更新を確認」から手動も可能。  
 - **永続化の一本化**（メインプロセス）：`userData` 内 `app-state.v1.json` と、任意の**連携フォルダ**上の `workhelper-storage.json`（形式は 1.4 系の JSON と互換のキー集合）。

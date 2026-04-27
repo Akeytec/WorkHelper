@@ -67,7 +67,7 @@ if (-not $env:GH_TOKEN) {
   throw "GH_TOKEN is not set. Create a GitHub token with repo release permissions, then set `$env:GH_TOKEN."
 }
 
-$package = Get-Content -Raw -Path "package.json" | ConvertFrom-Json
+$package = Get-Content -Raw -Encoding UTF8 -Path "package.json" | ConvertFrom-Json
 $version = [string]$package.version
 if (-not $version) {
   throw "package.json version was not found."

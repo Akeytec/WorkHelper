@@ -119,6 +119,7 @@ $blockmap = "$installer.blockmap"
 $latest = Join-Path $repoRoot "dist\latest.yml"
 $certSetupDir = Join-Path $repoRoot "dist\WorkHelper-Certificate-Setup"
 $certSetupZip = Join-Path $repoRoot "dist\WorkHelper-Certificate-Setup.zip"
+$certificateBat = Join-Path $repoRoot "register-certificate.bat"
 
 foreach ($asset in @($installer, $blockmap, $latest)) {
   if (-not (Test-Path $asset)) {
@@ -137,7 +138,7 @@ if (Test-Path $certSetupDir) {
 }
 New-Item -ItemType Directory -Force -Path $certSetupDir | Out-Null
 Copy-Item -Path $resolvedCert -Destination (Join-Path $certSetupDir "WorkHelper-CodeSigning.cer") -Force
-Copy-Item -Path (Join-Path $repoRoot "証明書を登録.bat") -Destination (Join-Path $certSetupDir "証明書を登録.bat") -Force
+Copy-Item -Path $certificateBat -Destination (Join-Path $certSetupDir "register-certificate.bat") -Force
 Copy-Item -Path (Join-Path $repoRoot "tools\signing\install-workhelper-certificate.ps1") -Destination (Join-Path $certSetupDir "install-workhelper-certificate.ps1") -Force
 if (Test-Path $certSetupZip) {
   Remove-Item -Force $certSetupZip
@@ -169,7 +170,7 @@ Send-ReleaseAsset -ReleaseId $release.id -Path $blockmap
 Send-ReleaseAsset -ReleaseId $release.id -Path $latest
 Send-ReleaseAsset -ReleaseId $release.id -Path $certSetupZip
 Send-ReleaseAsset -ReleaseId $release.id -Path $resolvedCert
-Send-ReleaseAsset -ReleaseId $release.id -Path (Join-Path $repoRoot "証明書を登録.bat")
+Send-ReleaseAsset -ReleaseId $release.id -Path $certificateBat
 Send-ReleaseAsset -ReleaseId $release.id -Path (Join-Path $repoRoot "tools\signing\install-workhelper-certificate.ps1")
 
 Write-Host ""

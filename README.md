@@ -3,7 +3,7 @@
 ## はじめて使う方（3ステップ）
 
 1. ブラウザで **[Releases ページ](https://github.com/Akeytec/WorkHelper/releases)** を開きます。  
-2. 一覧の**最新**のところの **Assets** から、**`WorkHelper-Setup-x.x.x.exe`**（例: `WorkHelper-Setup-2.0.1.exe`）をダウンロードし、保存したファイルを**ダブルクリック**してインストールします。  
+2. 一覧の**最新**のところの **Assets** から、**`WorkHelper-Setup-x.x.x.exe`**（例: `WorkHelper-Setup-2.0.2.exe`）をダウンロードし、保存したファイルを**ダブルクリック**してインストールします。  
 3. 完了したら、**スタートメニュー**（または「すべてのアプリ」）の **WorkHelper** を起動します。  
 
 > 開発者向け（ソースから動かす・ビルドする）の手順は **[`docs/開発者向け.md`](docs/開発者向け.md)** だけを参照してください。`git` や `npm` の知識は、**この README を読む利用者**には不要です。

@@ -1,6 +1,6 @@
 {
   "name": "workhelper",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "WorkHelper デスクトップ（Electron）",
   "main": "electron/main.cjs",
   "author": "WorkHelper",
@@ -48,7 +48,8 @@
     "publish": {
       "provider": "github",
       "owner": "Akeytec",
-      "repo": "WorkHelper"
+      "repo": "WorkHelper",
+      "releaseType": "release"
     }
   }
 }

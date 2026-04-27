@@ -5,9 +5,11 @@
 const { app, BrowserWindow, ipcMain, dialog, shell, Menu, nativeImage } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { autoUpdater } = require("electron-updater");
 
 let mainWindow = null;
 let saveTimer = null;
+let manualUpdateCheck = false;
 let store = {
   v: 1,
   keys: Object.create(null),
@@ -131,6 +133,104 @@ function setItem(key, value) {
   schedulePersist();
 }
 
+function showUpdateMessage(options) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  dialog.showMessageBox(mainWindow, options).catch(function (e) {
+    console.error("update dialog:", e);
+  });
+}
+
+function checkForUpdates(userInitiated) {
+  if (!app.isPackaged) {
+    if (userInitiated) {
+      showUpdateMessage({
+        type: "info",
+        message: "開発モード",
+        detail: "パッケージ化されたアプリでのみ更新を確認できます。",
+      });
+    }
+    return;
+  }
+  manualUpdateCheck = !!userInitiated;
+  autoUpdater.checkForUpdates().catch(function (e) {
+    console.error("updater:", e);
+    if (manualUpdateCheck) {
+      showUpdateMessage({
+        type: "error",
+        title: "WorkHelper 更新",
+        message: "更新を確認できませんでした。",
+        detail:
+          (e && e.message ? e.message : String(e)) +
+          "\n\nGitHub Releases が Draft のままになっていないか、ネットワーク接続を確認してください。",
+      });
+      manualUpdateCheck = false;
+    }
+  });
+}
+
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = true;
+  autoUpdater.on("checking-for-update", function () {
+    if (manualUpdateCheck) {
+      showUpdateMessage({
+        type: "info",
+        title: "WorkHelper 更新",
+        message: "更新を確認しています。",
+      });
+    }
+  });
+  autoUpdater.on("update-not-available", function () {
+    if (manualUpdateCheck) {
+      showUpdateMessage({
+        type: "info",
+        title: "WorkHelper 更新",
+        message: "利用可能な更新はありません。",
+      });
+      manualUpdateCheck = false;
+    }
+  });
+  autoUpdater.on("error", function (e) {
+    console.error("updater:", e);
+    if (manualUpdateCheck) {
+      showUpdateMessage({
+        type: "error",
+        title: "WorkHelper 更新",
+        message: "更新を確認できませんでした。",
+        detail:
+          (e && e.message ? e.message : String(e)) +
+          "\n\nGitHub Releases が Draft のままになっていないか、ネットワーク接続を確認してください。",
+      });
+      manualUpdateCheck = false;
+    }
+  });
+  autoUpdater.on("update-available", function () {
+    showUpdateMessage({
+      type: "info",
+      title: "WorkHelper 更新",
+      message: "新しいバージョンをダウンロードしています。完了後、再起動の案内を表示します。",
+    });
+  });
+  autoUpdater.on("update-downloaded", function () {
+    manualUpdateCheck = false;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      dialog
+        .showMessageBox(mainWindow, {
+          type: "info",
+          title: "WorkHelper 更新",
+          message: "更新の準備ができました。今すぐ再起動して更新を適用しますか？",
+          buttons: ["再起動", "あとで"],
+        })
+        .then(function (r) {
+          if (r.response === 0) {
+            autoUpdater.quitAndInstall(false, true);
+          }
+        });
+    } else {
+      autoUpdater.quitAndInstall(false, true);
+    }
+  });
+}
+
 function buildMenu() {
   const template = [
     {
@@ -158,16 +258,7 @@ function buildMenu() {
         {
           label: "更新を確認",
           click: function () {
-            const { autoUpdater } = require("electron-updater");
-            if (app.isPackaged) {
-              autoUpdater.checkForUpdates();
-            } else {
-              dialog.showMessageBox(mainWindow, {
-                type: "info",
-                message: "開発モード",
-                detail: "パッケージ化されたアプリでのみ更新を確認できます。",
-              });
-            }
+            checkForUpdates(true);
           },
         },
       ],
@@ -251,44 +342,8 @@ if (!gotTheLock) {
     buildMenu();
     createWindow();
     if (app.isPackaged) {
-      try {
-        const { autoUpdater } = require("electron-updater");
-        autoUpdater.on("error", function (e) {
-          console.error("updater", e);
-        });
-        autoUpdater.on("update-available", function () {
-          if (mainWindow) {
-            dialog.showMessageBox(mainWindow, {
-              type: "info",
-              title: "WorkHelper 更新",
-              message: "新しいバージョンをダウンロードしています。完了後、再起動の案内を表示します。",
-            });
-          }
-        });
-        autoUpdater.on("update-downloaded", function () {
-          if (mainWindow) {
-            dialog
-              .showMessageBox(mainWindow, {
-                type: "info",
-                title: "WorkHelper 更新",
-                message: "更新の準備ができました。今すぐ再起動して更新を適用しますか？",
-                buttons: ["再起動", "あとで"],
-              })
-              .then(function (r) {
-                if (r.response === 0) {
-                  const { autoUpdater: au } = require("electron-updater");
-                  au.quitAndInstall(false, true);
-                }
-              });
-          } else {
-            const { autoUpdater: au } = require("electron-updater");
-            au.quitAndInstall(false, true);
-          }
-        });
-        autoUpdater.checkForUpdates();
-      } catch (e) {
-        console.error("autoUpdater", e);
-      }
+      setupAutoUpdater();
+      checkForUpdates(false);
     }
   });
 

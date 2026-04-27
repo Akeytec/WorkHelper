@@ -43,6 +43,22 @@ echo Changed files:
 git status --short
 if errorlevel 1 goto fail
 
+set "DATA_FOUND="
+for /f "delims=" %%F in ('git ls-files ^| findstr /I "workhelper-storage.json app-state workhelper-backup .workhelper-backup.json"') do (
+  echo ERROR: User data is already tracked by Git: %%F
+  set "DATA_FOUND=1"
+)
+for /f "delims=" %%F in ('git status --short --untracked-files^=all ^| findstr /I "workhelper-storage.json app-state workhelper-backup .workhelper-backup.json"') do (
+  echo ERROR: User data is present in the working tree: %%F
+  set "DATA_FOUND=1"
+)
+if defined DATA_FOUND (
+  echo.
+  echo These files may contain tasks, memo, overtime, 36 Agreement, or personal data.
+  echo Move them outside this repository or keep them ignored before committing.
+  goto fail
+)
+
 git diff --quiet
 set "UNSTAGED=%ERRORLEVEL%"
 git diff --cached --quiet

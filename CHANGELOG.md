@@ -2,6 +2,22 @@
 
 This file records user-facing changes and data compatibility notes for each release.
 
+## [2.0.2] - 2026-04-27
+
+### Fixed
+
+- GitHub Releases created by `electron-builder` are now configured as published releases (`releaseType: release`) instead of drafts, so `electron-updater` can find them.
+- The Help > Check for Updates action now shows clear messages for checking, no update, and update check errors.
+
+### Security / Privacy
+
+- Added a persistent Cursor rule that forbids committing or pushing user data.
+- `commit-push.bat` now refuses to commit if likely WorkHelper user data files are tracked or present in the working tree.
+
+### Data Compatibility
+
+- No stored data format change.
+
 ## [2.0.1] - 2026-04-27
 
 ### Changed

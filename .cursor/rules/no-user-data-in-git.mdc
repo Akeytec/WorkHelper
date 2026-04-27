@@ -1,0 +1,29 @@
+---
+description: 保存データ・個人情報を Git commit / push に含めない
+alwaysApply: true
+---
+
+# 保存データのコミット禁止
+
+## 絶対ルール
+
+タスク・メモ・時間外・36協定・社員情報・テストで使った個人情報を含む可能性がある保存データは、**commit / push に絶対に含めない**。
+
+## 禁止対象
+
+- `workhelper-storage.json`
+- `app-state*.json`
+- `workhelper-backup*.json`
+- `*.workhelper-backup.json`
+- 上記以外でも、アプリの実データ・検証データ・個人情報を含む JSON / CSV / Excel / ログ
+
+## 作業時の必須確認
+
+- commit 前に `git status --short` を確認する。
+- commit 前に保存データ名を検索する。
+- 誤って追跡済みになっていた場合は、内容を読まずにユーザーへ確認し、`git rm --cached` などで Git 追跡から外す（ファイル自体は消さない）。
+- `commit-push.bat` の拒否チェックを弱めない。
+
+## 例外
+
+匿名化済みの最小サンプルをテスト用に追加する場合でも、ユーザーの明示許可を得てから行う。

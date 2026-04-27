@@ -2,6 +2,18 @@
 
 This file records user-facing changes and data compatibility notes for each release.
 
+## [2.0.3] - 2026-04-27
+
+### Added
+
+- Added update status to the Home screen below My Tasks.
+- Added Home screen buttons that show "Check for Updates" when current and "Update" when an update is needed.
+- The app continues to check for updates automatically at startup and now reflects that status in the Home screen.
+
+### Data Compatibility
+
+- No stored data format change.
+
 ## [2.0.2] - 2026-04-27
 
 ### Fixed

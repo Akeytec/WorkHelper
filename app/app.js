@@ -2,7 +2,7 @@
   "use strict";
 
   /** Release version. Keep this aligned with package.json and CHANGELOG. */
-  var APP_VERSION = "2.0.2";
+  var APP_VERSION = "2.0.3";
 
   var TASK_KEY = "workhelper.tasks.v1";
   var MEMO_KEY = "workhelper.memo.v1";
@@ -3252,6 +3252,97 @@
     }
   }
 
+  function renderHomeUpdateStatus(status) {
+    var wrap = qs("home-update-status");
+    var btn = qs("home-update-button");
+    if (!wrap || !btn) return;
+
+    if (!isElectronApp() || !window.workhelper.getUpdateStatus) {
+      wrap.textContent = "デスクトップ版でのみ更新を確認できます。";
+      btn.textContent = "更新を確認";
+      btn.disabled = true;
+      btn.dataset.updateStatus = "unsupported";
+      return;
+    }
+
+    var s = status || {};
+    var current = s.currentVersion || APP_VERSION;
+    var latest = s.latestVersion || "";
+    btn.disabled = false;
+    btn.dataset.updateStatus = s.status || "idle";
+
+    if (s.status === "checking") {
+      wrap.textContent = "更新状態: 確認中です。";
+      btn.textContent = "確認中";
+      btn.disabled = true;
+      return;
+    }
+    if (s.status === "latest") {
+      wrap.textContent = "更新状態: 最新です（現在 " + current + "）。";
+      btn.textContent = "更新を確認";
+      return;
+    }
+    if (s.status === "available") {
+      wrap.textContent =
+        "更新状態: 更新が必要です" + (latest ? "（最新版 " + latest + "）" : "") + "。";
+      btn.textContent = "アップデート";
+      return;
+    }
+    if (s.status === "downloaded") {
+      wrap.textContent =
+        "更新状態: 更新が必要です。アップデートの準備ができました。";
+      btn.textContent = "アップデート";
+      return;
+    }
+    if (s.status === "error") {
+      wrap.textContent = "更新状態: 確認できませんでした。";
+      btn.textContent = "更新を確認";
+      return;
+    }
+    if (s.status === "unsupported") {
+      wrap.textContent = s.message || "この環境では更新を確認できません。";
+      btn.textContent = "更新を確認";
+      btn.disabled = true;
+      return;
+    }
+
+    wrap.textContent = "更新状態: 未確認です（現在 " + current + "）。";
+    btn.textContent = "更新を確認";
+  }
+
+  function initHomeUpdateStatus() {
+    var btn = qs("home-update-button");
+    if (!btn) return;
+    renderHomeUpdateStatus(null);
+    if (!isElectronApp() || !window.workhelper.getUpdateStatus) return;
+
+    window.workhelper.getUpdateStatus()
+      .then(renderHomeUpdateStatus)
+      .catch(function () {
+        renderHomeUpdateStatus({ status: "error", currentVersion: APP_VERSION });
+      });
+
+    if (window.workhelper.onUpdateStatus) {
+      window.workhelper.onUpdateStatus(renderHomeUpdateStatus);
+    }
+
+    btn.addEventListener("click", function () {
+      var status = btn.dataset.updateStatus || "";
+      btn.disabled = true;
+      if (status === "downloaded" && window.workhelper.installUpdate) {
+        window.workhelper.installUpdate();
+        return;
+      }
+      if (window.workhelper.checkForUpdates) {
+        window.workhelper.checkForUpdates()
+          .then(renderHomeUpdateStatus)
+          .catch(function () {
+            renderHomeUpdateStatus({ status: "error", currentVersion: APP_VERSION });
+          });
+      }
+    });
+  }
+
   function showView(name, soonMeta) {
     var views = document.querySelectorAll(".view");
     for (var i = 0; i < views.length; i++) {
@@ -3261,6 +3352,11 @@
     }
     if (name === "home") {
       renderHomeTaskPreview();
+      if (window.workhelper && window.workhelper.getUpdateStatus) {
+        window.workhelper.getUpdateStatus()
+          .then(renderHomeUpdateStatus)
+          .catch(function () {});
+      }
     }
     if (name === "history") {
       renderTaskHistoryView();
@@ -3422,6 +3518,7 @@
       };
 
       renderHomeTaskPreview();
+      initHomeUpdateStatus();
 
       var openTasks = qs("home-open-tasks");
       if (openTasks) {

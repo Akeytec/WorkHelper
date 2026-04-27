@@ -10,6 +10,13 @@ const { autoUpdater } = require("electron-updater");
 let mainWindow = null;
 let saveTimer = null;
 let manualUpdateCheck = false;
+let updateDownloaded = false;
+let updateState = {
+  status: app.isPackaged ? "idle" : "unsupported",
+  currentVersion: app.getVersion(),
+  latestVersion: null,
+  message: app.isPackaged ? "更新はまだ確認していません。" : "開発モードでは更新確認を利用できません。",
+};
 let store = {
   v: 1,
   keys: Object.create(null),
@@ -140,8 +147,20 @@ function showUpdateMessage(options) {
   });
 }
 
+function setUpdateState(next) {
+  updateState = Object.assign({}, updateState, next, { currentVersion: app.getVersion() });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("wh-update-status", updateState);
+  }
+}
+
 function checkForUpdates(userInitiated) {
   if (!app.isPackaged) {
+    setUpdateState({
+      status: "unsupported",
+      latestVersion: null,
+      message: "開発モードでは更新確認を利用できません。",
+    });
     if (userInitiated) {
       showUpdateMessage({
         type: "info",
@@ -152,8 +171,14 @@ function checkForUpdates(userInitiated) {
     return;
   }
   manualUpdateCheck = !!userInitiated;
+  updateDownloaded = false;
   autoUpdater.checkForUpdates().catch(function (e) {
     console.error("updater:", e);
+    setUpdateState({
+      status: "error",
+      message: "更新を確認できませんでした。",
+      error: e && e.message ? e.message : String(e),
+    });
     if (manualUpdateCheck) {
       showUpdateMessage({
         type: "error",
@@ -171,6 +196,12 @@ function checkForUpdates(userInitiated) {
 function setupAutoUpdater() {
   autoUpdater.autoDownload = true;
   autoUpdater.on("checking-for-update", function () {
+    setUpdateState({
+      status: "checking",
+      latestVersion: null,
+      message: "更新を確認しています。",
+      error: null,
+    });
     if (manualUpdateCheck) {
       showUpdateMessage({
         type: "info",
@@ -179,7 +210,13 @@ function setupAutoUpdater() {
       });
     }
   });
-  autoUpdater.on("update-not-available", function () {
+  autoUpdater.on("update-not-available", function (info) {
+    setUpdateState({
+      status: "latest",
+      latestVersion: info && info.version ? info.version : app.getVersion(),
+      message: "最新です。",
+      error: null,
+    });
     if (manualUpdateCheck) {
       showUpdateMessage({
         type: "info",
@@ -191,6 +228,11 @@ function setupAutoUpdater() {
   });
   autoUpdater.on("error", function (e) {
     console.error("updater:", e);
+    setUpdateState({
+      status: "error",
+      message: "更新を確認できませんでした。",
+      error: e && e.message ? e.message : String(e),
+    });
     if (manualUpdateCheck) {
       showUpdateMessage({
         type: "error",
@@ -203,31 +245,22 @@ function setupAutoUpdater() {
       manualUpdateCheck = false;
     }
   });
-  autoUpdater.on("update-available", function () {
-    showUpdateMessage({
-      type: "info",
-      title: "WorkHelper 更新",
-      message: "新しいバージョンをダウンロードしています。完了後、再起動の案内を表示します。",
+  autoUpdater.on("update-available", function (info) {
+    setUpdateState({
+      status: "available",
+      latestVersion: info && info.version ? info.version : null,
+      message: "更新が必要です。ダウンロードしています。",
+      error: null,
     });
   });
   autoUpdater.on("update-downloaded", function () {
+    updateDownloaded = true;
+    setUpdateState({
+      status: "downloaded",
+      message: "更新の準備ができました。",
+      error: null,
+    });
     manualUpdateCheck = false;
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      dialog
-        .showMessageBox(mainWindow, {
-          type: "info",
-          title: "WorkHelper 更新",
-          message: "更新の準備ができました。今すぐ再起動して更新を適用しますか？",
-          buttons: ["再起動", "あとで"],
-        })
-        .then(function (r) {
-          if (r.response === 0) {
-            autoUpdater.quitAndInstall(false, true);
-          }
-        });
-    } else {
-      autoUpdater.quitAndInstall(false, true);
-    }
   });
 }
 
@@ -440,4 +473,22 @@ ipcMain.on("wh-persist-now", function () {
     saveTimer = null;
   }
   persistSync();
+});
+
+ipcMain.handle("wh-update-status", function () {
+  return updateState;
+});
+
+ipcMain.handle("wh-update-check", function () {
+  checkForUpdates(true);
+  return updateState;
+});
+
+ipcMain.handle("wh-update-install", function () {
+  if (app.isPackaged && updateDownloaded) {
+    autoUpdater.quitAndInstall(false, true);
+    return { ok: true };
+  }
+  checkForUpdates(true);
+  return { ok: false, status: updateState };
 });

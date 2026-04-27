@@ -1,6 +1,6 @@
 {
   "name": "workhelper",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "WorkHelper デスクトップ（Electron）",
   "main": "electron/main.cjs",
   "author": "WorkHelper",

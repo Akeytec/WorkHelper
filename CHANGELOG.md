@@ -2,6 +2,18 @@
 
 This file records user-facing changes and data compatibility notes for each release.
 
+## [2.0.5] - 2026-04-27
+
+### Changed
+
+- Prepared the internal signed release flow for company PCs.
+- Disabled unsigned tag-based GitHub Actions releases.
+- Added certificate registration guidance for company PCs.
+
+### Data Compatibility
+
+- No stored data format change.
+
 ## [2.0.4] - 2026-04-27
 
 ### Fixed

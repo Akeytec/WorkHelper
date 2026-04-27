@@ -1,8 +1,8 @@
 (function () {
   "use strict";
 
-  /** 配布バージョン（ZIP 同梱時は CHANGELOG と揃える） */
-  var APP_VERSION = "2.0.0";
+  /** Release version. Keep this aligned with package.json and CHANGELOG. */
+  var APP_VERSION = "2.0.1";
 
   var TASK_KEY = "workhelper.tasks.v1";
   var MEMO_KEY = "workhelper.memo.v1";

@@ -13,6 +13,12 @@ __pycache__/
 
 *.local
 
+# WorkHelper local/user data (must never be committed)
+workhelper-storage.json
+app-state*.json
+workhelper-backup*.json
+*.workhelper-backup.json
+
 # npm（ExcelJS の vendor 同梱用。配布 ZIP には node_modules を含めない）
 node_modules/
 

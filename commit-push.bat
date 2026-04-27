@@ -4,7 +4,13 @@ setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
 set "DRYRUN="
+set "AUTO_YES="
+set "MSG="
 if /I "%~1"=="--dry-run" set "DRYRUN=1"
+if /I "%~1"=="--yes" (
+  set "AUTO_YES=1"
+  set "MSG=%~2"
+)
 
 echo WorkHelper commit and push helper
 echo.
@@ -56,7 +62,7 @@ if defined DRYRUN (
 )
 
 echo.
-set /p "MSG=Commit message (English recommended): "
+if not defined MSG set /p "MSG=Commit message (English recommended): "
 if "%MSG%"=="" (
   echo ERROR: Commit message is required.
   pause
@@ -69,11 +75,13 @@ echo   git add -A
 echo   git commit -m "%MSG%"
 echo   git push -u origin !BRANCH!
 echo.
-choice /M "Continue"
-if errorlevel 2 (
-  echo Cancelled.
-  pause
-  exit /b 0
+if not defined AUTO_YES (
+  choice /M "Continue"
+  if errorlevel 2 (
+    echo Cancelled.
+    pause
+    exit /b 0
+  )
 )
 
 git add -A
@@ -87,11 +95,11 @@ if errorlevel 1 goto fail
 
 echo.
 echo Done.
-pause
+if not defined AUTO_YES pause
 exit /b 0
 
 :fail
 echo.
 echo ERROR: Command failed. Check the message above.
-pause
+if not defined AUTO_YES pause
 exit /b 1

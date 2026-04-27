@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WorkHelper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="with-memo-dock">
+  <!-- Home -->
+  <section id="view-home" class="view" aria-label="Home">
+    <div class="shell shell--home">
+      <section class="home-preview" aria-labelledby="home-preview-heading">
+        <div class="home-preview__head">
+          <div class="home-preview__intro">
+            <h2 id="home-preview-heading" class="home-preview__title">マイタスク</h2>
+            <p id="home-task-summary" class="home-preview__summary" hidden>
+              未完了 <span id="home-task-undone-count">0</span> 件 · 全 <span id="home-task-total-count">0</span> 件
+            </p>
+          </div>
+          <button type="button" class="home-preview__cta" id="home-open-tasks">一覧を開く</button>
+        </div>
+        <ul id="home-task-preview" class="home-preview__list" hidden></ul>
+        <p id="home-task-preview-empty" class="home-preview__empty">タスクはまだありません。「一覧を開く」から追加できます。</p>
+      </section>
+
+      <header class="home-header">
+        <h1 class="home-title">主要機能</h1>
+        <p class="home-lead">よく使う機能をカードで整理</p>
+      </header>
+      <div id="home-grid" class="home-grid"></div>
+      <p class="home-footnote">PC にインストールして使うデスクトップアプリです（操作はオフラインで可）。<strong>フォルダに保存</strong>はバックアップ画面で保存先を指定してください。</p>
+    </div>
+  </section>
+
+  <!-- マイタスク -->
+  <section id="view-tasks" class="view" hidden aria-labelledby="feature-tasks-title">
+    <div class="shell shell--feature">
+      <header class="feature-bar">
+        <button type="button" class="btn-back">← Home</button>
+        <h2 id="feature-tasks-title" class="feature-heading">マイタスク</h2>
+      </header>
+      <div class="feature-body">
+        <div class="card card--feature">
+          <h3 class="card-title">今日のタスク</h3>
+          <form id="task-form" class="task-form">
+            <input type="text" id="task-input" placeholder="やることを入力して Enter" autocomplete="off" maxlength="500" />
+            <button type="submit">追加</button>
+          </form>
+          <ul id="task-list" class="task-list"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- タスク履歴 -->
+  <section id="view-history" class="view" hidden aria-labelledby="feature-history-title">
+    <div class="shell shell--feature">
+      <header class="feature-bar">
+        <button type="button" class="btn-back">← Home</button>
+        <h2 id="feature-history-title" class="feature-heading">タスク履歴</h2>
+      </header>
+      <div class="feature-body">
+        <div class="card card--feature">
+          <p class="hint history-hint">Home のマイタスクで「完了」したタスクが、完了日時とともに最大 50 件まで保存されます。</p>
+          <ul id="history-list" class="history-list" hidden></ul>
+          <p id="history-empty" class="history-empty">まだ履歴がありません。Home のマイタスクから「完了」するとここに表示されます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社員リスト -->
+  <section id="view-employees" class="view" hidden aria-labelledby="feature-employees-title">
+    <div class="shell shell--feature">
+      <header class="feature-bar">
+        <button type="button" class="btn-back">← Home</button>
+        <h2 id="feature-employees-title" class="feature-heading">社員リスト</h2>
+      </header>
+      <div class="feature-body">
+        <div class="card card--feature">
+          <p class="hint employee-hint">
+            初期の列は「社員番号」「氏名」「所属」です。セルの編集はいつでも行え、自動で保存されます。
+            <strong>「行を追加」「列を追加」「上へ」「下へ」「列削除」「行削除」</strong>は<strong>編集モード</strong>をオンにしたときだけ表示されます。列は最低1列必要です。
+            <strong>テンプレート（CSV）</strong>は保存済みの列見出しに基づきます（列を増やしたあとにダウンロードすると列も増えます）。<strong>CSVインポート</strong>は1行目を列名として<strong>社員リストをまるごと置き換え</strong>ます。
+          </p>
+          <div class="employee-toolbar">
+            <button type="button" id="btn-employee-edit-mode" class="secondary employee-edit-mode-btn" aria-pressed="false">
+              編集モード
+            </button>
+            <button type="button" id="btn-employee-add-row" class="secondary employee-toolbar-edit">行を追加</button>
+            <button type="button" id="btn-employee-add-col" class="secondary employee-toolbar-edit">列を追加</button>
+            <span class="employee-toolbar-csv">
+              <button type="button" id="btn-employee-csv-template" class="secondary">テンプレート（CSV）</button>
+              <label class="file-label secondary">
+                CSVインポート
+                <input type="file" id="input-employee-csv-import" accept=".csv,text/csv,text/plain" hidden />
+              </label>
+            </span>
+          </div>
+          <div class="employee-scroll">
+            <table class="employee-table" id="employee-table"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 時間外・36協定（MF勤怠CSV） -->
+  <section id="view-overtime" class="view" hidden aria-labelledby="feature-overtime-title">
+    <div class="shell shell--feature">
+      <header class="feature-bar">
+        <button type="button" class="btn-back">← Home</button>
+        <h2 id="feature-overtime-title" class="feature-heading">時間外・36協定</h2>
+      </header>
+      <div class="feature-body">
+        <div class="card card--feature">
+          <div class="hint overtime-hint overtime-hint--blocks">
+            <p><strong>対応するCSV</strong>：マネーフォワード勤怠の<strong>法定外・休日労働時間レポート</strong>、または法定外時間（平日）などがある<strong>月次勤怠集計</strong>。UTF-8／Shift_JIS は自動で判読します。</p>
+            <p><strong>照合のしかた</strong>：CSVの従業員番号＝社員リストの社員番号。上限は<strong>36協定 値設定</strong>の所属別の値を、社員リストの<strong>所属</strong>と対応させます。</p>
+            <p><strong>1ヶ月の色</strong>：比較値が上限の<strong>設定％未満</strong>は緑（以内）、<strong>同％以上で未超過</strong>は黄（警告）、<strong>超過</strong>は赤。％は値設定で変えられます。</p>
+            <p><strong>複数月・年度</strong>：月次CSVを取り込み、<strong>履歴に登録</strong>すると一覧に反映されます（既定は直近<strong>5ヶ月</strong>の平均と、<strong>1月〜12月</strong>の年間合計）。細かい設定は下の<strong>集計期間パネル</strong>（年間の形は<strong>編集モード</strong>で変更）。</p>
+            <p><strong>一覧とExcel</strong>：<strong>編集モード</strong>で列の非表示・再表示（社員番号は常に表示）。Excelは、見えている列と判定どおりに出力。協定の数値を変えたら、ダイアログで<strong>保存してから</strong>エクスポートしてください。</p>
+            <p class="overtime-hint__legal">本機能は<strong>法的助言ではありません</strong>。</p>
+          </div>
+          <div class="overtime-toolbar">
+            <button type="button" id="btn-overtime-edit-mode" class="secondary overtime-edit-mode-btn" aria-pressed="false">
+              編集モード
+            </button>
+            <button type="button" id="btn-overtime-kyotei-settings" class="secondary">
+              36協定 値設定
+            </button>
+            <label class="file-label secondary">
+              CSVを選択
+              <input type="file" id="input-overtime-csv-import" accept=".csv,text/csv,text/plain" hidden />
+            </label>
+            <button type="button" id="btn-overtime-export-xlsx" class="secondary overtime-export-btn" disabled title="先に MF 勤怠の CSV を取り込んでください">
+              Excelにエクスポート
+            </button>
+            <span id="overtime-export-status" class="overtime-export-status" role="status" aria-live="polite" aria-atomic="true"></span>
+            <div class="overtime-limits" aria-label="比較に使うCSV列">
+              <label class="overtime-field overtime-field--grow">
+                <span class="overtime-field__label">月間の比較に使うCSV列</span>
+                <select id="overtime-monthly-metric" class="overtime-limit-select">
+                  <option value="tokubetsu">特別条項（平日・所定休日法定外＋法定休日）</option>
+                  <option value="kyotei36sum">36協定（平日＋所定休日法定外のみ）</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div id="overtime-monthly-history-banner" class="overtime-monthly-history-banner" hidden role="status">
+            <p class="overtime-monthly-history-banner__text">
+              月次勤怠集計のCSVを取り込みました。対象の<strong>年月</strong>を選び、<strong>履歴に取り込む</strong>と、複数月平均・年度累計の算出に使われます（<span id="wh-storage-hint-short">このブラウザ内の保存領域（localStorage）</span>に保存されます）。
+            </p>
+            <div class="overtime-monthly-history-banner__row">
+              <label class="overtime-field">
+                <span class="overtime-field__label">履歴に登録する年月</span>
+                <input type="month" id="overtime-import-history-ym" class="overtime-limit-input" />
+              </label>
+              <button type="button" id="btn-overtime-append-history" class="secondary">履歴に取り込む</button>
+            </div>
+          </div>
+          <div class="overtime-period-panel overtime-period-panel--collapsed" id="overtime-period-panel">
+            <button type="button" class="overtime-period-panel__toggle" id="btn-overtime-period-toggle" aria-expanded="false" aria-controls="overtime-period-panel-body">
+              6ヶ月平均・1年の集計期間（月次履歴）
+            </button>
+            <div id="overtime-period-panel-body" class="overtime-period-panel__body">
+              <p class="hint overtime-period-panel__hint">
+                <strong>既定</strong>：複数月平均は直近<strong>5ヶ月</strong>の平均、年間（12ヶ月）の合計は<strong>1月〜12月（暦年）</strong>です。「開始月から12ヶ月」に切り替えると、例として<strong>4月始まりなら翌年3月まで</strong>のように連続12ヶ月で集計します。<strong>年間の形・西暦年</strong>は一覧の<strong>編集モード</strong>をオンにすると変更できます（オフのときは表示のみ）。6ヶ月平均・1年の列の色は、<strong>超過</strong>（赤）・<strong>警告</strong>（黄）・<strong>以内</strong>（緑）です。
+              </p>
+              <label class="overtime-period-line">
+                <input type="checkbox" id="overtime-use-history-aggregation" checked />
+                <span>月次履歴から集計する（オフのときはCSVの「複数月」「年度累計」列のみを使用）</span>
+              </label>
+              <div class="overtime-period-grid">
+                <label class="overtime-field overtime-field--grow">
+                  <span class="overtime-field__label">ロール平均の終了月</span>
+                  <input type="month" id="overtime-roll-end-ym" class="overtime-limit-input" title="空欄のときは履歴の最新月まで" />
+                  <span class="overtime-period-field-note">空欄＝履歴の最新月まで</span>
+                </label>
+                <label class="overtime-field">
+                  <span class="overtime-field__label">集計する月数</span>
+                  <input type="number" id="overtime-roll-months" class="overtime-limit-input" min="1" max="24" step="1" value="5" />
+                </label>
+              </div>
+              <div class="overtime-period-year-fields" aria-label="年間12ヶ月の集計（編集モードで変更）">
+                <p class="overtime-period-year-fields__caption">年間（12ヶ月）の範囲</p>
+                <div class="overtime-year-mode-row">
+                  <label class="overtime-year-mode-label">
+                    <input type="radio" name="overtime-year-mode" id="overtime-year-mode-calendar" value="calendar" checked />
+                    <span>1月〜12月（暦年）</span>
+                  </label>
+                  <label class="overtime-year-mode-label">
+                    <input type="radio" name="overtime-year-mode" id="overtime-year-mode-rolling" value="rolling12" />
+                    <span>開始月から12ヶ月</span>
+                  </label>
+                </div>
+                <div id="overtime-year-start-wrap" class="overtime-year-start-wrap" hidden>
+                  <label class="overtime-field overtime-field--grow">
+                    <span class="overtime-field__label">開始月</span>
+                    <select id="overtime-year-start-month" class="overtime-limit-select">
+                      <option value="1">1月</option>
+                      <option value="2">2月</option>
+                      <option value="3">3月</option>
+                      <option value="4">4月</option>
+                      <option value="5">5月</option>
+                      <option value="6">6月</option>
+                      <option value="7">7月</option>
+                      <option value="8">8月</option>
+                      <option value="9">9月</option>
+                      <option value="10">10月</option>
+                      <option value="11">11月</option>
+                      <option value="12">12月</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="overtime-field overtime-field--grow">
+                  <span class="overtime-field__label">基準となる西暦年</span>
+                  <input type="number" id="overtime-fy-april-year" class="overtime-limit-input" min="2000" max="2100" step="1" />
+                  <span class="overtime-period-field-note">暦年：その年の1〜12月。開始月12ヶ月：この年の開始月から連続12ヶ月。表示は未保存時は今日の年。変更後は「期間設定を反映」で保存。</span>
+                </label>
+              </div>
+              <button type="button" id="btn-overtime-save-period" class="secondary">期間設定を反映</button>
+              <div id="overtime-history-summary" class="overtime-history-summary" aria-live="polite"></div>
+            </div>
+          </div>
+          <div id="overtime-column-add-panel" class="overtime-column-add-panel" hidden>
+            <div class="overtime-column-add-panel__head">
+              <strong class="overtime-column-add-panel__title">列を追加</strong>
+              <span class="overtime-column-add-panel__desc">非表示にした列を、ボタンを押すと一覧に戻します。</span>
+            </div>
+            <div id="overtime-column-add-buttons" class="overtime-column-add-buttons" role="group" aria-label="非表示の列を表示に戻す"></div>
+          </div>
+          <div id="overtime-report-container" class="overtime-report-container"></div>
+          <div id="overtime-orphans" class="overtime-orphans" hidden></div>
+
+          <div id="overtime-kyotei-dialog" class="overtime-dialog" hidden aria-hidden="true">
+            <div class="overtime-dialog__backdrop" data-overtime-kyotei-close="1"></div>
+            <div class="overtime-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="overtime-kyotei-dialog-title">
+              <div class="overtime-dialog__head">
+                <h3 id="overtime-kyotei-dialog-title" class="overtime-dialog__title">36協定 値設定</h3>
+                <button type="button" id="btn-overtime-kyotei-edit-mode" class="secondary overtime-kyotei-dialog-edit-btn" aria-pressed="false">
+                  編集モード
+                </button>
+              </div>
+              <p class="hint overtime-kyotei-dialog__hint">
+                社員リストの<strong>所属</strong>と、下の<strong>所属</strong>列の文字列が<strong>完全一致</strong>した行の数値で、1ヶ月（通常・特別）・6ヶ月平均・1年合計を判定します。6ヶ月平均は「法定外・休日労働時間レポート」に<strong>複数月（2～6ヶ月平均）</strong>列がある場合のみ照合します。<strong>編集モード</strong>をオンにすると、行の追加・削除と列の削除が使えます（所属列は常に表示されます）。<strong>1ヶ月（通常）</strong>が<strong>1ヶ月（特別）</strong>を超えると入力欄が<strong>赤</strong>、通常が特別の<strong>下のしきい値％以上</strong>なら<strong>黄</strong>（特別までの余裕が少ない目安）になります。一覧・Excel の黄信号も同じ％を使います。
+              </p>
+              <div class="overtime-kyotei-approach-row">
+                <label class="overtime-kyotei-approach-row__label" for="overtime-kyotei-approach-pct">
+                  黄信号しきい値（比較値が上限の何％以上で未超過のとき）
+                </label>
+                <div class="overtime-kyotei-approach-row__field">
+                  <input
+                    type="number"
+                    id="overtime-kyotei-approach-pct"
+                    class="overtime-kyotei-approach-pct"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="80"
+                    readOnly
+                    aria-describedby="overtime-kyotei-approach-hint"
+                  />
+                  <span class="overtime-kyotei-approach-row__unit" aria-hidden="true">%</span>
+                </div>
+                <p id="overtime-kyotei-approach-hint" class="overtime-kyotei-approach-row__hint">
+                  編集モードで変更し、<strong>保存</strong>すると一覧・Excel に反映されます（既定 80%）。
+                </p>
+              </div>
+              <div class="overtime-dialog__scroll">
+                <table class="overtime-kyotei-editor">
+                  <thead id="overtime-kyotei-thead"></thead>
+                  <tbody id="overtime-kyotei-tbody"></tbody>
+                </table>
+              </div>
+              <div class="overtime-dialog__actions">
+                <button type="button" id="btn-overtime-kyotei-add-row" class="secondary overtime-kyotei-edit-only">行を追加</button>
+                <button type="button" id="btn-overtime-kyotei-save" class="secondary">保存</button>
+                <button type="button" id="btn-overtime-kyotei-cancel" class="secondary">キャンセル</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- バックアップ -->
+  <section id="view-backup" class="view" hidden aria-labelledby="feature-backup-title">
+    <div class="shell shell--feature">
+      <header class="feature-bar">
+        <button type="button" class="btn-back">← Home</button>
+        <h2 id="feature-backup-title" class="feature-heading">バックアップ</h2>
+      </header>
+      <div class="feature-body">
+        <div class="card card--feature">
+          <p class="hint">タスク・タスク履歴・社員リスト・メモ・時間外の設定などは、既定では<strong>アプリ専用の保存領域</strong>（PC 上のプロファイル内）に保存されます。バックアップ画面の<strong>フォルダを選ぶ</strong>で保存先を指定すると、<strong>workhelper-storage.json</strong> にも同じ内容のバックアップを自動で書き出せます。別PCへ移すときは JSON のエクスポート、または <strong>README</strong> の手順に従って更新してください。</p>
+          <p id="backup-app-version" class="hint backup-app-version" aria-live="polite"></p>
+          <div class="backup-fs-panel">
+            <h3 class="backup-fs-panel__title">PC上のフォルダに自動保存（初回のみ選択）</h3>
+            <p id="backup-fs-status" class="hint backup-fs-status" role="status" aria-live="polite"></p>
+            <div class="backup-row backup-row--fs">
+              <button type="button" id="btn-backup-fs-pick" class="secondary">フォルダを選ぶ</button>
+              <button type="button" id="btn-backup-fs-forget" class="secondary" hidden>フォルダ連携をやめる</button>
+            </div>
+          </div>
+          <div class="backup-row">
+            <button type="button" id="btn-export" class="secondary">すべてエクスポート（.json）</button>
+            <label class="file-label secondary">
+              インポート
+              <input type="file" id="btn-import" accept=".json,application/json" hidden />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 準備中（今後の機能用） -->
+  <section id="view-soon" class="view" hidden aria-labelledby="soon-title">
+    <div class="shell shell--feature">
+      <header class="feature-bar">
+        <button type="button" class="btn-back">← Home</button>
+        <h2 id="soon-title" class="feature-heading">準備中</h2>
+      </header>
+      <div class="feature-body">
+        <div class="card card--feature card--soon">
+          <p id="soon-desc" class="soon-text"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="memo-dock" aria-label="メモ（常時表示）">
+    <header class="memo-dock__header">
+      <span class="memo-dock__title">メモ</span>
+      <span class="memo-dock__badge">自動保存</span>
+    </header>
+    <div class="memo-dock__body">
+      <label class="sr-only" for="memo">メモ</label>
+      <textarea
+        id="memo"
+        placeholder="思いついたことをメモ…（どの画面でも右側に表示・自動保存）"
+        spellcheck="false"
+      ></textarea>
+    </div>
+  </aside>
+
+  <script src="vendor/exceljs.min.js"></script>
+  <script src="fs-storage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

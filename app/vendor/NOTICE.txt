@@ -1,0 +1,5 @@
+Third-party software bundled in this folder:
+
+- exceljs.min.js — ExcelJS (MIT License)
+  https://github.com/exceljs/exceljs
+  See node_modules/exceljs/LICENSE when refreshing from npm.

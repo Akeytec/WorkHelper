@@ -1,0 +1,20 @@
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# 旧 Python 仮想環境（残っていれば無視）
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+
+*.local
+
+# npm（ExcelJS の vendor 同梱用。配布 ZIP には node_modules を含めない）
+node_modules/
+
+# Electron ビルド成果物
+/dist/

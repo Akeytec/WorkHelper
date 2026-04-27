@@ -1,0 +1,53 @@
+{
+  "name": "workhelper",
+  "version": "2.0.0",
+  "description": "WorkHelper デスクトップ（Electron）",
+  "main": "electron/main.cjs",
+  "author": "WorkHelper",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Akeytec/WorkHelper.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "exceljs": "4.4.0"
+  },
+  "build": {
+    "appId": "com.workhelper.app",
+    "productName": "WorkHelper",
+    "copyright": "Copyright © WorkHelper",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "electron/**/*.cjs",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Akeytec",
+      "repo": "WorkHelper"
+    }
+  }
+}

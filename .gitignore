@@ -24,3 +24,13 @@ node_modules/
 
 # Electron ビルド成果物
 /dist/
+
+# Local code signing secrets (never commit private keys or passwords)
+/signing-local/
+*.pfx
+*.p12
+*.pem
+*.key
+*.pvk
+*.spc
+*.cert-password.txt
